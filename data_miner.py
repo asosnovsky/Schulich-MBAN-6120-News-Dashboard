@@ -1,7 +1,5 @@
 from api import newsapi, Article
 
-# articles = newsapi.query_remote("bitcoin", "abc-remote")
-
 topic_to_search = [
     'btc', 
     'bitcoin',
@@ -19,7 +17,6 @@ current_data_dates = newsapi.query_db("""
     GROUP BY `topic`
 """)
 
-print(current_data_dates)
 for row in current_data_dates:
     newsapi.update_db_from_remote(row['topic'], fromDate=row['lastDate'], verbose=True)
 
@@ -31,17 +28,3 @@ for row in current_data_dates:
 for topic in topic_to_search:
     newsapi.update_db_from_remote(topic, verbose=True)
     print(f"======== DONE {topic} ========")
-
-
-
-
-
-# current_data_dates = newsapi.query_db("""
-#     SELECT 
-#         MAX(publishedAt) as lastDate,
-#         MIN(publishedAt) as firstDate
-#     FROM 
-#         articles
-# """)[0]
-
-# print(current_data_dates)

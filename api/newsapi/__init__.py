@@ -1,82 +1,35 @@
+# configure nltk
+import nltk
+nltk.download('stopwords')
+
+# Dependencies
 import sqlite3
 import json
 import math
 import logging
 
-from typing import List
+# Deps
+import re
 
+from typing import List
+from nltk.corpus import stopwords
+
+from .NewsDB import NewsDB
 from .NewsAPIRemote import NewsAPIRemote, Request, Response, Status, SortBy, Article
 from .util import dict_factory, convert_isoformat_to_datetime
 
 log = logging.getLogger(__name__)
 
+STOP_WORDS = set(stopwords.words('english')) 
+WORD_REGEX = re.compile("[A-Za-z]+")
+
 class RemoteServerError(Exception):
     pass
 
-class NewsAPI:
+class NewsAPI(NewsDB):
     def __init__(self, baseUrl: str, apiKey: str, dbLocation: str = ":memory:"):
+        NewsDB.__init__(self, dbLocation)
         self._remote = NewsAPIRemote(baseUrl, apiKey)
-        self._dbLocation = dbLocation
-        self.create_db()
-
-    def get_db(self):
-        return sqlite3.connect(self._dbLocation)
-
-    def create_db(self):
-        with self.get_db() as cursor:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS articles (
-                    obj_id String Primary Key,
-                    topic String,
-                    source String,
-                    author String,
-                    title String,
-                    description String,
-                    url String,
-                    urlToImage String,
-                    publishedAt Datetime,
-                    content String
-                );
-            """)
-            cursor.commit()
-
-    def query_db(self, sql_code: str, *params, mapping_function=dict_factory):
-        with self.get_db() as cursor:
-            cursor_exc = cursor.execute(sql_code, (*params,))
-            data = [
-                mapping_function(cursor_exc, row)
-                for row in cursor_exc
-            ]
-        return data
-
-    def insert_article(self, articles: List[Article], topic: str = None):
-        col_names = [
-            "obj_id",
-            "source",
-            "author",
-            "title",
-            "description",
-            "url",
-            "urlToImage",
-            "publishedAt",
-            "content",
-        ]
-        if topic is not None:
-            col_names.append('topic')
-        data = ( article.set_topic_return_list(topic, col_names) for article in articles ) 
-
-        with self.get_db() as cursor:
-            cursor.executemany(
-                f"""
-                    INSERT OR IGNORE INTO articles ({ ','.join(col_names) })
-                    VALUES 
-                    ({ ",".join( 
-                        ["?"] * len(col_names) 
-                    ) })
-                """, 
-                data
-            )
-            cursor.commit()
 
     def update_db_from_remote(self, 
         q: str,
@@ -127,6 +80,55 @@ class NewsAPI:
                     log.warn(req, res)
                     raise RemoteServerError(response_obj.message)
                 self.insert_article(response_obj.articles, q)
+        if verbose:
+            logging.basicConfig(level=logging.WARNING)
 
+    def update_db_word_counter(self, verbose: bool = False):
+        if verbose:
+            logging.basicConfig(level=logging.DEBUG)
         
-    
+        # Get total Counts
+        total_articles = self.query_db("""
+            SELECT 
+                COUNT() AS N
+            FROM
+                articles
+            WHERE obj_id NOT IN (
+                SELECT DISTINCT obj_id FROM word_counts
+            )
+        """)[0]["N"]
+
+        # Define a function to get data
+        def get_rows():
+            return self.query_db("""
+                SELECT 
+                    obj_id, 
+                    topic,
+                    title 
+                FROM
+                    articles
+                WHERE obj_id NOT IN (
+                    SELECT DISTINCT obj_id FROM word_counts
+                )
+                LIMIT 100
+            """)
+
+        # Loop on data
+        rows = get_rows()
+        processed_count = 0
+        while len(rows) > 0:
+            for row in rows:
+                word_counter = {}
+                for word in row['title'].split(' '):
+                    for sub_word in WORD_REGEX.findall(word.lower()):
+                        if sub_word not in STOP_WORDS and WORD_REGEX.match(sub_word):
+                            if sub_word not in word_counter.keys():
+                                word_counter[sub_word] = 0
+                            word_counter[sub_word] += 1
+                self.insert_word_counts(row['obj_id'], row['topic'], word_counter)  
+            processed_count += len(rows)
+            rows = get_rows()
+            log.info(f"Processing ... {processed_count}/{total_articles}")
+
+        if verbose:
+            logging.basicConfig(level=logging.WARNING)

@@ -32,7 +32,7 @@ class Request(NewsObj):
         )
     
     def to_url(self) -> str:
-        url = self.baseUrl + f"?apiKey={self.apiKey}&q={self.q}"
+        url = self.baseUrl + f"?apiKey={self.apiKey}&q={self.q}&language=en"
         if self.sources is not None:
             url += f"&sources={self.sources}"
         if self.fromDate is not None:
