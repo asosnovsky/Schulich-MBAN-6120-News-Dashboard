@@ -16,37 +16,40 @@ class RemoteServerError(Exception):
 class NewsAPI:
     def __init__(self, baseUrl: str, apiKey: str, dbLocation: str = ":memory:"):
         self._remote = NewsAPIRemote(baseUrl, apiKey)
-        self._db = sqlite3.connect(dbLocation)
+        self._dbLocation = dbLocation
         self.create_db()
 
+    def get_db(self):
+        return sqlite3.connect(self._dbLocation)
+
     def create_db(self):
-        cursor = self._db.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS articles (
-                obj_id String Primary Key,
-                topic String,
-                source String,
-                author String,
-                title String,
-                description String,
-                url String,
-                urlToImage String,
-                publishedAt Datetime,
-                content String
-            );
-        """)
-        self._db.commit()
-        cursor.close()
+        with self.get_db() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS articles (
+                    obj_id String Primary Key,
+                    topic String,
+                    source String,
+                    author String,
+                    title String,
+                    description String,
+                    url String,
+                    urlToImage String,
+                    publishedAt Datetime,
+                    content String
+                );
+            """)
+            cursor.commit()
 
     def query_db(self, sql_code: str, *params, mapping_function=dict_factory):
-        cursor = self._db.execute(sql_code, (*params,))
-        return [
-            mapping_function(cursor, row)
-            for row in cursor
-        ]
+        with self.get_db() as cursor:
+            cursor_exc = cursor.execute(sql_code, (*params,))
+            data = [
+                mapping_function(cursor_exc, row)
+                for row in cursor_exc
+            ]
+        return data
 
     def insert_article(self, articles: List[Article], topic: str = None):
-        cursor = self._db.cursor()
         col_names = [
             "obj_id",
             "source",
@@ -62,18 +65,18 @@ class NewsAPI:
             col_names.append('topic')
         data = ( article.set_topic_return_list(topic, col_names) for article in articles ) 
 
-        cursor.executemany(
-            f"""
-                INSERT OR IGNORE INTO articles ({ ','.join(col_names) })
-                VALUES 
-                ({ ",".join( 
-                    ["?"] * len(col_names) 
-                ) })
-            """, 
-            data
-        )
-        self._db.commit()
-        cursor.close()
+        with self.get_db() as cursor:
+            cursor.executemany(
+                f"""
+                    INSERT OR IGNORE INTO articles ({ ','.join(col_names) })
+                    VALUES 
+                    ({ ",".join( 
+                        ["?"] * len(col_names) 
+                    ) })
+                """, 
+                data
+            )
+            cursor.commit()
 
     def update_db_from_remote(self, 
         q: str,

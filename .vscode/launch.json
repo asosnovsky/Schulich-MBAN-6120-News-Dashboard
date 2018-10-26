@@ -5,6 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Random Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "random_tests.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Data Api",
+            "type": "python",
+            "request": "launch",
+            "program": "data_api.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Data Miner",
             "type": "python",
             "request": "launch",
