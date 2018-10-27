@@ -1,4 +1,5 @@
 from api import newsapi, Article
+from constants import DEFAULT_TOPIC_LIST
 
 def mine_data(topic_to_search: list, verbose: bool = False):
     current_data_dates = newsapi.query_db("""
@@ -25,11 +26,4 @@ def mine_data(topic_to_search: list, verbose: bool = False):
         print(f"======== DONE {topic} ========")
 
 if __name__ == "__main__":
-    mine_data([
-        'btc', 
-        'bitcoin',
-        'crypto',
-        'etherium',
-        'terrorism',
-        'trump'
-    ], verbose=True)
+    mine_data(DEFAULT_TOPIC_LIST, verbose=True)

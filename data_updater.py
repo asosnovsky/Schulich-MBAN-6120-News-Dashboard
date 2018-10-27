@@ -3,15 +3,7 @@ import threading
 from data_miner import mine_data
 from data_cleaner import clean_data
 from api import RemoteServerError
-
-topics = [
-    'btc', 
-    'bitcoin',
-    'crypto',
-    'etherium',
-    'terrorism',
-    'trump'
-]
+from constants import DEFAULT_TOPIC_LIST
 
 class UpdateThread(threading.Thread):
     def __init__(self, verbose: bool = False):
@@ -21,7 +13,7 @@ class UpdateThread(threading.Thread):
         from time import sleep
         while True:
             try:
-                mine_data(topics, self.verbose)
+                mine_data(DEFAULT_TOPIC_LIST, self.verbose)
                 clean_data(self.verbose)
                 sleep(5)
             except RemoteServerError as e:
