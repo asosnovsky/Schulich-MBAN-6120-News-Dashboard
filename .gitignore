@@ -2,3 +2,4 @@
 _secrets.py
 __pycache__
 db.db
+node_modules

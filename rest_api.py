@@ -11,11 +11,22 @@ app = Flask(__name__, static_folder=os.path.join(BASE_FOLDER, "static"))
 def route_index():
     return render_template("index.html")
 
-@app.route("/data/<topic>")
-def route_data(topic: str):
+@app.route("/data/topics")
+def route_data():
     return jsonify(newsapi.query_db(f"""
-        SELECT * FROM articles 
-        WHERE topic = ?;
+        SELECT distinct topic FROM word_counts 
+    """, mapping_function=lambda _, r: r[0]))
+
+@app.route("/data/word-count/<topic>")
+def route_data_word_count(topic: str):
+    return jsonify(newsapi.query_db(""" 
+        SELECT 
+            word, 
+            COUNT() as size
+        FROM word_counts
+        WHERE topic = ?
+        GROUP BY topic, word
+        HAVING size > 1;
     """, topic))
 
 if __name__ == "__main__":

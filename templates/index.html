@@ -3,8 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Data Science 2 - Dashboard - Assignment 2</title>
+    
+    <link rel="stylesheet" href="/static/node_modules/vue-material/dist/vue-material.min.css">
+    <link rel="stylesheet" href="/static/node_modules/vue-material/dist/theme/black-green-dark.css">
+    <link rel="stylesheet" href="/static/node_modules/material-icons/iconfont/material-icons.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+
+    <script src="/static/node_modules/vue/dist/vue.min.js"></script>
+    <script src="/static/node_modules/vue-material/dist/vue-material.min.js"></script>
+    <script src="/static/node_modules/d3/dist/d3.min.js"></script>
+    <script src="/static/node_modules/d3-scale/dist/d3-scale.min.js"></script>
+    <script src="/static/node_modules/d3-cloud/build/d3.layout.cloud.js"></script>
+    <script src="/static/js/WordCloud.js"></script>
+    <script src="/static/js/BarChart.js"></script>
 </head>
 <body>
-    <h3>Hello World</h3>
+    <style>
+        .md-drawer.md-theme-default {
+            flex: 0.15;
+        }
+        .md-app {
+            min-height: 100vh;
+        }
+    </style>
+    <div id="app">
+        <div class="page-container">
+            <md-app md-waterfall md-mode="fixed">
+                <md-app-toolbar class="md-primary">
+                    <span class="md-title">Newsapi Word Analyzer</span>
+                </md-app-toolbar>
+                
+                <md-app-drawer md-permanent="full">
+                    <md-toolbar class="md-transparent" md-elevation="0">
+                        Topics
+                    </md-toolbar>
+                    
+                    <md-list>
+                        <md-list-item v-for="topic in topics" @click="updateWordCloud(topic)()">
+                            <div class="md-list-item-text">
+                                %(topic)%
+                            </div>
+                        </md-list-item>
+                    </md-list>
+                </md-app-drawer>
+                
+                <md-app-content class="md-layout" id="data-container">
+                    <div class="md-layout-item" id="word-cloud"></div>
+                    <div class="md-layout-item" id="bar-chart"></div>
+                </md-app-content>
+            </md-app>
+        </div>
+    </div>
+    
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

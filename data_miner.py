@@ -4,7 +4,9 @@ topic_to_search = [
     'btc', 
     'bitcoin',
     'crypto',
-    'etherium'
+    'etherium',
+    'terrorism',
+    'trump'
 ]
 
 current_data_dates = newsapi.query_db("""

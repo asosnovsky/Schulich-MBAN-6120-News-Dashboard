@@ -1,0 +1,27 @@
+html, body {
+    overflow: hidden;
+}
+#data-container {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #888; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(126, 172, 40, 0.5); ; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(72, 99, 23, 0.5); ; 
+}
