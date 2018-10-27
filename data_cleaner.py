@@ -10,4 +10,8 @@ from pprint import pprint
 
 from api import newsapi
 
-newsapi.update_db_word_counter(verbose=True)
+def clean_data(verbose: bool = False):
+    newsapi.update_db_word_counter(verbose=verbose)
+
+if __name__ == "__main__":
+    clean_data(True)
