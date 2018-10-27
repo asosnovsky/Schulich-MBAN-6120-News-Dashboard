@@ -15,10 +15,7 @@ WIP
 - run `python data_updater.py` to run a process that updates the database every 5s
 
 # Run Web App
-- install [node-js](https://nodejs.org/en/)
-- go to `/static`, run `npm i`, this will create your `node_modules` folder
 - run `python rest_api.py` to run the web-app
 
 # Run main process
-- make sure that all the steps in [Run Webapp](#run-webapp) are followed
 - run `python main.py`
