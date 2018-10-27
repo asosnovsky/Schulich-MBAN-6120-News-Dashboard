@@ -125,10 +125,16 @@ class NewsAPI(NewsDB):
                             if sub_word not in word_counter.keys():
                                 word_counter[sub_word] = 0
                             word_counter[sub_word] += 1
-                self.insert_word_counts(row['obj_id'], row['topic'], word_counter)  
-            processed_count += len(rows)
+                if len(word_counter) > 0:
+                    self.insert_word_counts(row['obj_id'], row['topic'], word_counter) 
+                else:
+                    # Removes useless articles
+                    # these are usually non-english articles that somehow snack in
+                    with self.get_db() as c:
+                        c.execute("DELETE FROM articles WHERE obj_id = ?", (row['obj_id'], ) ) 
+                processed_count += 1
+                log.info(f"Processing ... {processed_count}/{total_articles}")
             rows = get_rows()
-            log.info(f"Processing ... {processed_count}/{total_articles}")
 
         if verbose:
             logging.basicConfig(level=logging.WARNING)
