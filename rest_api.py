@@ -1,7 +1,9 @@
 import os
+import json
 
 from flask import Flask, render_template, jsonify
 from api import newsapi
+from api.newsapi.util import dict_factory
 
 BASE_FOLDER = os.path.dirname(__file__)
 
@@ -28,6 +30,23 @@ def route_data_word_count(topic: str):
         GROUP BY topic, word
         HAVING size > 1;
     """, topic))
+
+@app.route("/data/sources/<topic>")
+def route_data_sources(topic: str):
+    def mapping_function(c, row):
+        obj = dict_factory(c, row)
+        json_source = json.loads(obj['source'])
+        obj['source'] = json_source['name'] if json_source['name'] else json_source['id']
+        return obj
+    return jsonify(newsapi.query_db(""" 
+        SELECT 
+            topic, source, 
+            COUNT() as size
+        FROM articles
+        WHERE topic = ?
+        GROUP BY topic, source
+        HAVING size > 2
+    """, topic, mapping_function=mapping_function))
 
 if __name__ == "__main__":
     app.run(port="8080", debug=True)
