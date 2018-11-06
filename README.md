@@ -1,6 +1,8 @@
 # Schulich-MBAN-6120-News-Dashboard
 WIP
 
+<img src="readme-assets/eg1.gif">
+
 # Setup
 
 - clone repo
@@ -10,8 +12,6 @@ WIP
 - put your api key in `api/_secrets.py`
 
 # Populate Database
-- run `python data_miner.py` to populate database
-- run `python data_cleaner.py` to generate word counts in db
 - run `python data_updater.py` to run a process that updates the database every 5s
 
 # Run Web App
