@@ -17,9 +17,12 @@
   },
   "homepage": "https://github.com/asosnovsky/Schulich-MBAN-6120-News-Dashboard#readme",
   "dependencies": {
+    "britecharts": "^2.9.8",
+    "c3": "^0.6.8",
     "d3": "^5.7.0",
     "d3-cloud": "^1.2.5",
     "d3-scale": "^2.1.2",
+    "d3-selection": "^1.3.2",
     "material-icons": "^0.2.3",
     "vue": "^2.5.17",
     "vue-material": "^1.0.0-beta-10.2"

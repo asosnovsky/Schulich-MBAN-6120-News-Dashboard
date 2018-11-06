@@ -1,7 +1,6 @@
 import threading
 
-from data_miner import mine_data
-from data_cleaner import clean_data
+from api import mine_data, clean_data
 from api import RemoteServerError
 from constants import DEFAULT_TOPIC_LIST
 

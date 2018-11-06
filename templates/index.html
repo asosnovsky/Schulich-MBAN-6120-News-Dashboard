@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/node_modules/vue-material/dist/vue-material.min.css">
     <link rel="stylesheet" href="/static/node_modules/vue-material/dist/theme/black-green-dark.css">
     <link rel="stylesheet" href="/static/node_modules/material-icons/iconfont/material-icons.css">
+    <link rel="stylesheet" href="/static/node_modules/c3/c3.min.css">
     <link rel="stylesheet" href="/static/css/main.css">
 
     <script src="/static/node_modules/vue/dist/vue.min.js"></script>
@@ -14,8 +15,13 @@
     <script src="/static/node_modules/d3/dist/d3.min.js"></script>
     <script src="/static/node_modules/d3-scale/dist/d3-scale.min.js"></script>
     <script src="/static/node_modules/d3-cloud/build/d3.layout.cloud.js"></script>
+
+    <script src="/static/js/util.js"></script>
     <script src="/static/js/WordCloud.js"></script>
     <script src="/static/js/BarChart.js"></script>
+    <script src="/static/js/DonutChart.js"></script>
+    <script src="/static/js/main.js"></script>
+
 </head>
 <body>
     <style>
@@ -39,7 +45,7 @@
                     </md-toolbar>
                     
                     <md-list>
-                        <md-list-item v-for="topic in topics" @click="updateWordCloud(topic)()">
+                        <md-list-item v-for="topic in topics" @click="setCurrentTopic(topic)">
                             <div class="md-list-item-text">
                                 %(topic)%
                             </div>
@@ -47,9 +53,43 @@
                     </md-list>
                 </md-app-drawer>
                 
-                <md-app-content class="md-layout" id="data-container">
-                    <div class="md-layout-item" id="word-cloud"></div>
-                    <div class="md-layout-item" id="bar-chart"></div>
+                <md-app-content id="data-container">
+                    <div id="key-numbers" class="md-layout-item md-layout md-size-100 md-center">
+                        <div v-for="topWord in topWords" class="top-word md-layout-item md-elevation-5"> 
+                            <div class="md-title">
+                                %(topWord.word)%
+                            </div>
+                            <div>
+                                <span class="md-display-2" style="font-size: 2em;">%(topWord.percent)%%</span>
+                                <span class="md-caption" style="color: #949494">/%(topWord.count)%w</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="viz" class="md-layout-item md-layout md-size-100">
+                        <div class="md-layout-item md-size-40">
+                            <div class="md-title">Tone</div>
+                            <d3-donut-chart id="donut-chart-word-types" :data="topWords" height="w:75"></d3-donut-chart>
+                        </div>
+                        <div class="md-layout-item md-size-60">
+                            <div class="md-title">10 Word Mentions</div>
+                            <div class="md-layout" style="    height: 50vh;">
+                                <div class="md-layout-item md-size-50">
+                                    <div class="md-caption" style="text-align: right; padding-right: 1%;">Negative Words</div>
+                                    <d3-bar-chart id="bar-chart-top-10-negative" :data="top10['negative']" :options="charOptions.bar_top10_neg"></d3-bar-chart>
+                                </div>
+                                <div class="md-layout-item md-size-50">
+                                    <div class="md-caption" style="padding-left: 1%;">Positive Words</div>
+                                    <d3-bar-chart id="bar-chart-top-10-positive" :data="top10['positive']" :options="charOptions.bar_top10_pos"></d3-bar-chart>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md-layout-item md-size-40">
+                            <div class="md-caption" style="padding-left: 1%;">Top 10 Neutral Words</div>
+                            <d3-bar-chart id="bar-chart-top-10-neutral" :data="top10['neutral']" :options="charOptions.bar_top10_neut"></d3-bar-chart>
+                        </div>
+                        <div id="word-cloud"></div>
+                        <div id="bar-chart-word-count"></div>
+                    </div>
                 </md-app-content>
             </md-app>
         </div>
@@ -57,7 +97,5 @@
     <footer>
     <a href="https://newsapi.org" target="_blank" rel="noopener noreferrer">Powered by News API</a>
     </footer>
-    
-    <script src="/static/js/main.js"></script>
 </body>
 </html>

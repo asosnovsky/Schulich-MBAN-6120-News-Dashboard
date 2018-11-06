@@ -1,6 +1,8 @@
 import os
 import json
+import urllib
 
+from random import sample, randint
 from flask import Flask, render_template, jsonify
 from api import newsapi
 from api.newsapi.util import dict_factory
@@ -31,22 +33,45 @@ def route_data_word_count(topic: str):
         HAVING size > 1;
     """, topic))
 
-@app.route("/data/sources/<topic>")
-def route_data_sources(topic: str):
-    def mapping_function(c, row):
-        obj = dict_factory(c, row)
-        json_source = json.loads(obj['source'])
-        obj['source'] = json_source['name'] if json_source['name'] else json_source['id']
-        return obj
-    return jsonify(newsapi.query_db(""" 
-        SELECT 
-            topic, source, 
-            COUNT() as size
-        FROM articles
-        WHERE topic = ?
-        GROUP BY topic, source
-        HAVING size > 2
-    """, topic, mapping_function=mapping_function))
+@app.route("/data/nltk/counts/<topic>")
+def route_data_nltk_counts(topic: str):
+    mock_data = {
+        "Positive": randint(50, 100),
+        "Negative": randint(50, 100),
+        "Neutral": randint(25, 50),
+        "Other": randint(0, 10)
+    }
+    total = mock_data["Positive"] + mock_data['Negative'] + mock_data['Neutral'] + mock_data['Other']
+
+    return jsonify([
+        { "word": word, "count": count, "percent": round(100*count/total, 1) }
+        for word, count in mock_data.items()
+    ])
+
+@app.route("/data/nltk/top_10/<topic>")
+def route_data_nltk_top_10(topic: str):
+    word_url = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+    response = urllib.request.urlopen(word_url)
+    long_txt = response.read().decode()
+    words = long_txt.splitlines()
+    return jsonify({
+        "positive": [
+            { "word": sample(words, 1)[0], "size": 20 - j }
+            for j in range(10)
+        ],
+        "negative": [
+            { "word": sample(words, 1)[0], "size": 20 - j }
+            for j in range(10)
+        ],
+        "neutral": [
+            { "word": sample(words, 1)[0], "size": 20 - j }
+            for j in range(10)
+        ],
+        "other": [
+            { "word": sample(words, 1)[0], "size": 20 - j }
+            for j in range(10)
+        ],
+    })
 
 if __name__ == "__main__":
     app.run(port="8080", debug=True)
