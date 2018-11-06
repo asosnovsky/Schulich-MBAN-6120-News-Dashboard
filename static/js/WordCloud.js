@@ -57,7 +57,7 @@ function WordCloud(selector, options = {}) {
     };
     
     // Public Functions
-    this.update = (words) => {
+    this.updateData = (words) => {
         lastData = words;
         const { min, max } = findMinMax(words);
 
@@ -69,7 +69,7 @@ function WordCloud(selector, options = {}) {
         .rotate(() => ~~(Math.random() * 2) * 90 )
         .font("Impact")
         .fontSize(({ size }) => 
-            5+Math.pow(options.width*options.height, 1/3) * (size - min) / ( max - min )
+            5+Math.pow(options.width*options.height, 1/2) * (size - min) / ( max - min )
         )
         .on("end", draw)
         .start();
@@ -82,13 +82,14 @@ function WordCloud(selector, options = {}) {
         }
         createSvg();
         if (lastData) {
-            this.update(lastData);
+            this.updateData(lastData);
         }
     }
 
 
     // Constructor
     createSvg();
+    makeResize(selector, this);
 
     // Return
     return this;

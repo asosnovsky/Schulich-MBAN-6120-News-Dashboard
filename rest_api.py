@@ -21,6 +21,16 @@ def route_data():
         SELECT distinct topic FROM word_counts 
     """, mapping_function=lambda _, r: r[0]))
 
+@app.route("/data/articles/<topic>")
+def route_data_articles(topic: str):
+    return jsonify(newsapi.query_db(""" 
+        SELECT * FROM articles
+        WHERE topic = ?
+        ORDER BY publishedAt DESC
+        LIMIT 10
+        ;
+    """, topic))
+
 @app.route("/data/word-count/<topic>")
 def route_data_word_count(topic: str):
     return jsonify(newsapi.query_db(""" 
@@ -30,7 +40,8 @@ def route_data_word_count(topic: str):
         FROM word_counts
         WHERE topic = ?
         GROUP BY topic, word
-        HAVING size > 1;
+        HAVING size > 1
+        LIMIT 200;
     """, topic))
 
 @app.route("/data/nltk/counts/<topic>")

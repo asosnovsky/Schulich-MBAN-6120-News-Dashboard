@@ -10,7 +10,7 @@ footer {
 footer a {
     color: #4fa545 !important;
 }
-#data-container {
+#app {
     max-height: 100vh;
     overflow-y: auto;
 }
@@ -19,6 +19,32 @@ footer a {
 }
 #data-container > #viz {
     min-height: 100vh;
+}
+.article span {
+    background: #4242427d;
+    padding-left: 1%;
+}
+.article.md-card {
+    margin: 0;
+}
+.article span.md-subhead > a:hover {
+    color: #a2dc7e;
+    text-decoration: none;
+    font-weight: bold;
+}
+.article span.md-subhead > a {
+    color: var(--md-theme-default-theme);
+}
+.loading-cover-up {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #2021279e;
+    z-index: 50;
+    padding: 25%;
+}
+.loading-cover-down {
+    display: none;
 }
 /*
 #data-container > #viz > div {

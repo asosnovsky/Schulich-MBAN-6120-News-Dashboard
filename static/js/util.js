@@ -1,3 +1,14 @@
+function throttle(func, wait = 100) {
+    let timer = null;
+    return function(...args) {
+        if (timer === null) {
+            timer = setTimeout(() => {
+                func.apply(this, args);
+                timer = null;
+            }, wait); 
+        }
+    };
+}
 function makeResize(selector, ctx) {
     function resize() {
         const elm = document.querySelector(selector);
@@ -16,7 +27,7 @@ function makeResize(selector, ctx) {
         })
     }
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', throttle(resize, 500) );
     return resize;
 }
 
@@ -41,6 +52,7 @@ function d3AsVue(D3Class) {
         },
         watch: {
             data: function() {
+                console.log(this.id, this.data)
                 this.chart.updateData([...this.data]);
             },
             options: function() {

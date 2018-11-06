@@ -36,7 +36,7 @@ function BarChart(selector, options={}) {
         svg.selectAll("rect").data(data).enter()
             .append("rect")
             .style("fill", (_, i) => options.fill(i) )
-            .attr("transform", ({y, width}) => `translate(${
+            .attr("transform", ({y}) => `translate(${
                  0
             },${y})`)
             .attr("width", ({ width }) => options.negate ? width : 0)
@@ -61,10 +61,13 @@ function BarChart(selector, options={}) {
         svg.selectAll("text").transition().duration(600)
             .attr("transform", (d, i) => 
                 `translate(${
-                    options.toStart ? 0.01*options.width : 1+(options.width-d.width)
+                    options.toStart ? 0.01*options.width : (
+                        options.negate ? 1+(options.width-d.width) : d.width 
+                    )
                 }, ${ d.height/2 + i*options.barHeight })`
-            ).
-            style("font-weight", "bold")
+            )
+            .attr("text-anchor", options.negate ? "start" : options.toStart ? "start" : "end")
+            .style("font-weight", "bold")
     }
     function draw(data) {
         drawBar(data);
@@ -79,7 +82,7 @@ function BarChart(selector, options={}) {
         const {min, max} = findMinMax(data);
         draw(
             data.sort( (b, a) => a.size - b.size ).map( ({word, size}, idx) => ({
-                width: 1+ (1- options.fontFactor)*options.width * (size - min) / ( max - min ),
+                width: 1+ options.width * (size - min) / ( max - min ),
                 height: options.barHeight,
                 x: 0, y: idx * options.barHeight,
                 word, size
