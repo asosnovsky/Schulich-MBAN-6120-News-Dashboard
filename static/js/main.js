@@ -32,6 +32,7 @@ window.addEventListener("load", () => {
                 wordCounts: true,
                 top10: true,
             },
+            currentTopic: null,
             articles: [],
             topics: [],
             topWords: [],
@@ -62,6 +63,7 @@ window.addEventListener("load", () => {
         },
         methods: {
             setCurrentTopic(topic) {
+                this.currentTopic = topic;
                 this.resetLoadingStatus();
                 this.updateNewsFeed(topic);
                 this.updateTopicCharts(topic);

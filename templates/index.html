@@ -47,8 +47,11 @@
                     
                     <md-list>
                         <md-list-item v-for="topic in topics" @click="setCurrentTopic(topic)">
-                            <div class="md-list-item-text">
+                            <div v-if="currentTopic !== topic" class="md-list-item-text">
                                 %(topic)%
+                            </div>
+                            <div v-if="currentTopic === topic" class="md-list-item-text">
+                                <b>%(topic)%</b>
                             </div>
                         </md-list-item>
                     </md-list>
