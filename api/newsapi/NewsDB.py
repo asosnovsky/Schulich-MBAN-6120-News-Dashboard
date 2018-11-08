@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 from typing import List, Dict
 
@@ -37,6 +38,17 @@ class NewsDB:
                     count Integer,
                     
                     Primary Key (obj_id, topic, word)
+                );
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS article_sentiment (
+                    obj_id String,
+                    topic String,
+                    content_sentiment Double,
+                    description_sentiment Double,
+                    overall_sentiment Double,
+
+                    Primary Key (obj_id, topic)
                 );
             """)
             cursor.commit()
@@ -93,3 +105,18 @@ class NewsDB:
                 )
             )   
             cursor.commit()  
+    
+    def insert_sentiment(self, sentiments: pd.DataFrame):
+        with self.get_db() as cursor:
+            sentiments[[
+                'obj_id',
+                'topic',
+                'content_sentiment',
+                'description_sentiment',
+                'overall_sentiment'
+            ]].to_sql(
+                'article_sentiment', 
+                con=cursor, 
+                if_exists='append', 
+                index=False
+            )
