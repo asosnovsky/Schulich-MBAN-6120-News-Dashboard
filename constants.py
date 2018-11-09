@@ -1,3 +1,4 @@
 DEFAULT_TOPIC_LIST = [
-    'trump'
+    'trump',
+    'obama'
 ]
