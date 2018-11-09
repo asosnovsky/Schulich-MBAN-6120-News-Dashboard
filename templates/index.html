@@ -90,7 +90,7 @@
                                 <md-card v-for="article in newsfeed" class="article">
                                     <md-card-media-cover>
                                         <md-card-media md-ratio="16:9">
-                                            <img :src="article.urlToImage">
+                                            <img :src="article.urlToImage || '/static/NotFound.png'" onerror="this.src='/static/NotFound.png'">
                                         </md-card-media>
                                         
                                         <md-card-area>
