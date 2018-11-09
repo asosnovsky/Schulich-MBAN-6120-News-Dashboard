@@ -24,6 +24,12 @@ footer a {
     background: #4242427d;
     padding-left: 1%;
 }
+.article span.md-caption {
+    font-size: 0.5em;
+}
+.article span.md-subhead {
+    font-size: 0.75em;
+}
 .article.md-card {
     margin: 0;
 }

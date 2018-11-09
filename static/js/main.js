@@ -3,13 +3,14 @@
 window.addEventListener("load", () => {
     
     Vue.use(VueMaterial.default)
-    const app = new Vue({
+    new Vue({
         delimiters: ['%(', ')%'],
         el: '#app',
         components: {
             "d3-bar-chart": d3AsVue(BarChart),
             "d3-donut-chart": d3AsVue(DonutChart),
             "d3-word-cloud": d3AsVue(WordCloud),
+            "d3-line-chart": d3AsVue(LineChart),
             "loading-cover-up": {
                 template: `<div :class="displayClassName">
                     <md-progress-spinner v-if="loading" class="md-accent" md-mode="indeterminate"></md-progress-spinner>
@@ -22,85 +23,82 @@ window.addEventListener("load", () => {
                         return this.loading ? "loading-cover-up" : "loading-cover-down"
                     }
                 }
-            }
+            },
         },
         data: {
             loadingStatus: {
-                articles: true,
                 topics: true,
-                topWords: true,
                 wordCounts: true,
-                top10: true,
+                newsfeeds: {
+                    "Very Positive": true,
+                    "Positive": true,
+                    "Negative": true,
+                    "Very Negative": true,
+                },
+                timeseries: true,
+                topWords: true,
             },
             currentTopic: null,
-            articles: [],
+            charOptions: {},
+
             topics: [],
-            topWords: [],
-            wordCounts: [],
-            top10: {
-                "positive": [],
-                "negative": [],
-                "neutral": [],
+            newsfeeds: {
+                "Very Positive": [],
+                "Positive": [],
+                "Negative": [],
+                "Very Negative": [],
             },
-            charOptions: {
-                bar_top10_pos: {
-                    fill: () => "#a1b6ef",
-                    toStart: false,
-                    fontColor: "white"
-                },
-                bar_top10_neg: {
-                    fill: () => "red",
-                    toStart: false,
-                    negate: true,
-                    fontColor: "white"
-                },
-                bar_top10_neut: {
-                    fill: () => "var(--md-theme-default-accent)",
-                    toStart: true,
-                    fontColor: "var(--md-theme-default-primary)"
-                }
-            }
+            wordCounts: [],
+            topWords: [],
+            timeseries: [],
         },
         methods: {
             setCurrentTopic(topic) {
                 this.currentTopic = topic;
                 this.resetLoadingStatus();
+                this.updateTopWords(topic);
                 this.updateNewsFeed(topic);
-                this.updateTopicCharts(topic);
-                this.updateTopWordsCounts(topic);
-                this.updateTop10Words(topic);
+                this.updateWordsCounts(topic);
+                this.updateTimeseries(topic);
             },
-            async updateTopicCharts(keyword) {
+            async updateWordsCounts(keyword) {
                 const wordCountsReq = await fetch("/data/word-count/" + keyword);
                 this.wordCounts = await wordCountsReq.json();
                 this.loadingStatus.wordCounts = false
             },
-            async updateTopWordsCounts(keyword) {
-                const req = await fetch("data/nltk/counts/" + keyword)
-                this.topWords = await req.json();
+            async updateTopWords(keyword) {
+                const topWordsReq = await fetch("/data/nltk/counts/" + keyword);
+                this.topWords = await topWordsReq.json();
                 this.loadingStatus.topWords = false
             },
-            async updateTop10Words(keyword) {
-                const req = await fetch("data/nltk/top_10/" + keyword)
-                this.top10 = {
-                    ...this.top10,
-                    ...await req.json()
-                }
-                this.loadingStatus.top10 = false
+            async updateTimeseries(keyword) {
+                const timeseriesReq = await fetch("/data/nltk/sentiment-timeseries/" + keyword);
+                this.timeseries = await timeseriesReq.json();
+                this.loadingStatus.timeseries = false
+                console.log(this.timeseries)
             },
             async updateNewsFeed(keyword) {
-                const newsReq = await fetch("/data/articles/" + keyword);
-                this.articles = await newsReq.json();
-                this.loadingStatus.articles = false
+                return Promise.all(
+                    Object.keys(this.newsfeeds).map( async sent => {
+                        const newsReq = await fetch("/data/nltk/newsfeed/" + keyword + '/' + sent);
+                        this.newsfeeds[sent] = await newsReq.json();
+                        this.loadingStatus.newsfeeds[sent] = false
+                    } )
+                )
             },
             resetLoadingStatus() {
-                this.loadingStatus = {
-                    articles: true,
+                /* this.loadingStatus = {
                     topics: true,
-                    topWords: true,
                     wordCounts: true,
-                    top10: true,
-                }
+                    timeseries: true,
+                    topWords: true,
+                    newsfeeds: {
+                        "Very Positive": true,
+                        "Positive": true,
+                        "Negative": true,
+                        "Very Negative": true,
+                    },
+                // }*/
             }
         },
         async created() {

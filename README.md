@@ -1,7 +1,7 @@
 # Schulich-MBAN-6120-News-Dashboard
 WIP
 
-<img src="readme-assets/eg1.gif">
+<img src="readme-assets/eg2.gif">
 
 # Setup
 

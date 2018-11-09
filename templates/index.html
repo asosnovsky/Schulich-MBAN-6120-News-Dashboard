@@ -19,6 +19,7 @@
     <script src="/static/js/util.js"></script>
     <script src="/static/js/WordCloud.js"></script>
     <script src="/static/js/BarChart.js"></script>
+    <script src="/static/js/LineChart.js"></script>
     <script src="/static/js/DonutChart.js"></script>
     <script src="/static/js/main.js"></script>
     
@@ -40,7 +41,6 @@
                 </md-app-toolbar>
                 
                 <md-app-drawer md-permanent="full">
-                    <loading-cover-up :loading="topics === 5"></loading-cover-up>
                     <md-toolbar class="md-transparent" md-elevation="0">
                         Topics
                     </md-toolbar>
@@ -70,42 +70,24 @@
                         </div>
                     </div>
                     <div id="viz" class="md-layout-item md-layout md-size-100">
+                        <div class="md-layout-item md-size-60">
+                            <loading-cover-up :loading="loadingStatus.newsfeed"></loading-cover-up>
+                            <div class="md-title" style="text-align: center;">Sentiment Timeseries</div>
+                            <div style="height: 60vh;">
+                                <d3-line-chart id="timeseries" :data="timeseries"></d3-line-chart>
+                            </div>
+                        </div>
                         <div class="md-layout-item md-size-40">
                             <loading-cover-up :loading="loadingStatus.wordCounts"></loading-cover-up>
                             <div class="md-title" style="text-align: center;">Most Frequent Words</div>
-                            <div style="height: 50vh;">
+                            <div style="height: 60vh;">
                                 <d3-word-cloud id="word-cloud" :data="wordCounts"></d3-word-cloud>
                             </div>
                         </div>
-                        <div class="md-layout-item md-size-60">
-                            <loading-cover-up :loading="loadingStatus.top10"></loading-cover-up>
-                            <div class="md-title" style="text-align: center;">10 Word Mentions</div>
-                            <div class="md-layout" style="height: 50vh;">
-                                <div class="md-layout-item md-size-50">
-                                    <div class="md-caption" style="text-align: right; padding-right: 1%;">Negative Words</div>
-                                    <d3-bar-chart id="bar-chart-top-10-negative" :data="top10['negative']" :options="charOptions.bar_top10_neg"></d3-bar-chart>
-                                </div>
-                                <div class="md-layout-item md-size-50">
-                                    <div class="md-caption" style="padding-left: 1%;">Positive Words</div>
-                                    <d3-bar-chart id="bar-chart-top-10-positive" :data="top10['positive']" :options="charOptions.bar_top10_pos"></d3-bar-chart>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="md-layout-item md-size-25" style="height: 70vh">
-                            <loading-cover-up :loading="loadingStatus.top10"></loading-cover-up>
-                            <div class="md-title" style="text-align: center;">Top 10 Neutral Words</div>
-                            <d3-bar-chart id="bar-chart-top-10-neutral" :data="top10['neutral']" :options="charOptions.bar_top10_neut"></d3-bar-chart>
-                        </div>
-                        <div class="md-layout-item md-size-50">
-                            <loading-cover-up :loading="loadingStatus.topWords"></loading-cover-up>
-                            <div class="md-title" style="text-align: center;">Tone</div>
-                            <d3-donut-chart id="donut-chart-word-types" :data="topWords"></d3-donut-chart>    
-                        </div>
-                        <div class="md-layout-item md-size-25" >
-                            <loading-cover-up :loading="loadingStatus.articles"></loading-cover-up>
-                            <div class="md-title" style="text-align: center;">News Feed</div>
+                        <div v-for="(newsfeed, name) in newsfeeds" class="md-layout-item md-size-25" >
+                            <div class="md-title" style="text-align: center;">%(name)%</div>
                             <div style="max-height: 70vh; overflow-y: scroll; overflow-x: hidden;">
-                                <md-card v-for="article in articles" class="article">
+                                <md-card v-for="article in newsfeed" class="article">
                                     <md-card-media-cover>
                                         <md-card-media md-ratio="16:9">
                                             <img :src="article.urlToImage">

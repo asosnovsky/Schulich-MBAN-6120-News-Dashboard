@@ -11,6 +11,20 @@ BASE_FOLDER = os.path.dirname(__file__)
 
 app = Flask(__name__, static_folder=os.path.join(BASE_FOLDER, "static"))
 
+SENTIMENT_TABLE = """
+    SELECT 
+        obj_id,
+        topic,
+        overall_sentiment,
+        CASE 
+            WHEN overall_sentiment <= -0.25 THEN "Very Negative"
+            WHEN overall_sentiment <= 0 THEN "Negative"
+            WHEN overall_sentiment <= 0.25 THEN "Positive"
+            WHEN overall_sentiment > 0.25 THEN "Very Positive"
+        END sentiment_state
+    FROM article_sentiment
+"""
+
 @app.route("/")
 def route_index():
     return render_template("index.html")
@@ -44,45 +58,76 @@ def route_data_word_count(topic: str):
         LIMIT 200;
     """, topic))
 
+@app.route("/data/nltk/newsfeed/<topic>/<scale>")
+def route_data_nltk_newsfeed(topic: str, scale: str):
+    return jsonify(newsapi.query_db(f"""
+        SELECT 
+            s.sentiment_state,
+            a.*
+        FROM
+        (
+            {SENTIMENT_TABLE}
+            WHERE topic = ?
+        ) AS s
+        LEFT JOIN articles AS a ON a.obj_id=s.obj_id
+        WHERE s.sentiment_state = ?
+        ORDER BY a.publishedAt DESC
+        LIMIT 10
+    """, topic, scale))
+
+@app.route("/data/nltk/sentiment-timeseries/<topic>")
+def route_data_nltk_timeseries(topic: str):
+    return jsonify(newsapi.query_db(f"""
+        SELECT 
+            strftime("%Y-%m-%d %H:00", a.publishedAt) AS date,
+            s.sentiment_state,
+            COUNT() as count
+            FROM
+            (
+            {SENTIMENT_TABLE}
+                WHERE topic = ?
+            ) AS s
+            LEFT JOIN articles AS a ON a.obj_id=s.obj_id
+            GROUP BY 
+                s.sentiment_state, 
+                DATE(a.publishedAt),
+                strftime("%H", a.publishedAt)
+            ORDER BY a.publishedAt ASC
+    """, topic))
+
 @app.route("/data/nltk/counts/<topic>")
 def route_data_nltk_counts(topic: str):
-    mock_data = {
-        "Positive": randint(50, 100),
-        "Negative": randint(50, 100),
-        "Neutral": randint(25, 50),
-        "Other": randint(0, 10)
+    output_data = {
+        "Very Positive": 0,
+        "Positive": 0,
+        "Negative": 0,
+        "Very Negative": 0,
     }
-    total = mock_data["Positive"] + mock_data['Negative'] + mock_data['Neutral'] + mock_data['Other']
+
+    data = newsapi.query_db(f"""
+        SELECT 
+            a.topic,
+            s.sentiment_state,
+            COUNT() AS count,
+            a.publishedAt
+        FROM
+        (
+            {SENTIMENT_TABLE}
+            WHERE topic=?
+        ) AS s
+        LEFT JOIN articles AS a ON a.obj_id=s.obj_id
+        GROUP BY s.sentiment_state
+    """, topic)
+
+    total = 0
+    for row in data:
+        total += row['count']
+        output_data[row['sentiment_state']] = row['count']
 
     return jsonify([
         { "word": word, "count": count, "percent": round(100*count/total, 1) }
-        for word, count in mock_data.items()
+        for word, count in output_data.items()
     ])
-
-@app.route("/data/nltk/top_10/<topic>")
-def route_data_nltk_top_10(topic: str):
-    word_url = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
-    response = urllib.request.urlopen(word_url)
-    long_txt = response.read().decode()
-    words = long_txt.splitlines()
-    return jsonify({
-        "positive": [
-            { "word": sample(words, 1)[0], "size": 20 - j }
-            for j in range(10)
-        ],
-        "negative": [
-            { "word": sample(words, 1)[0], "size": 20 - j }
-            for j in range(10)
-        ],
-        "neutral": [
-            { "word": sample(words, 1)[0], "size": 20 - j }
-            for j in range(10)
-        ],
-        "other": [
-            { "word": sample(words, 1)[0], "size": 20 - j }
-            for j in range(10)
-        ],
-    })
 
 if __name__ == "__main__":
     app.run(port="8080", debug=True)

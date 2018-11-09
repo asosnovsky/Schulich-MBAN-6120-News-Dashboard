@@ -94,7 +94,6 @@ function BarChart(selector, options={}) {
             ...options,
             ...newOptions
         }
-        createSvg();
         if (lastData) {
             this.updateData(lastData);
         }
