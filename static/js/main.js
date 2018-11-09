@@ -7,8 +7,6 @@ window.addEventListener("load", () => {
         delimiters: ['%(', ')%'],
         el: '#app',
         components: {
-            "d3-bar-chart": d3AsVue(BarChart),
-            "d3-donut-chart": d3AsVue(DonutChart),
             "d3-word-cloud": d3AsVue(WordCloud),
             "d3-line-chart": d3AsVue(LineChart),
             "loading-cover-up": {
