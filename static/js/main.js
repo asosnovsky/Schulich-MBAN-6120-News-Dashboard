@@ -53,7 +53,6 @@ window.addEventListener("load", () => {
         methods: {
             setCurrentTopic(topic) {
                 this.currentTopic = topic;
-                this.resetLoadingStatus();
                 this.updateTopWords(topic);
                 this.updateNewsFeed(topic);
                 this.updateWordsCounts(topic);
@@ -84,20 +83,6 @@ window.addEventListener("load", () => {
                     } )
                 )
             },
-            resetLoadingStatus() {
-                /* this.loadingStatus = {
-                    topics: true,
-                    wordCounts: true,
-                    timeseries: true,
-                    topWords: true,
-                    newsfeeds: {
-                        "Very Positive": true,
-                        "Positive": true,
-                        "Negative": true,
-                        "Very Negative": true,
-                    },
-                // }*/
-            }
         },
         async created() {
             const req = await fetch("/data/topics");
