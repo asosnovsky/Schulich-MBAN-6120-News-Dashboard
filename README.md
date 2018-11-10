@@ -1,5 +1,6 @@
 # Schulich-MBAN-6120-News-Dashboard
-WIP
+
+[Report](/Report.docx)
 
 <img src="readme-assets/eg2.gif">
 
